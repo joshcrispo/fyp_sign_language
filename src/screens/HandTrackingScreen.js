@@ -1,203 +1,278 @@
-// HandTrackingScreen.js
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
+import { Holistic, POSE_CONNECTIONS, FACEMESH_TESSELATION, HAND_CONNECTIONS } from '@mediapipe/holistic';
+import { Camera } from '@mediapipe/camera_utils';
+import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import Button from '@mui/material/Button';
-import './HandTrackingScreen.css';
+import HomeIcon from '@mui/icons-material/Home';
+import HelpIcon from '@mui/icons-material/Help';
+import InfoIcon from '@mui/icons-material/Info';
+import * as tf from '@tensorflow/tfjs';
+import PinnedSubheaderList from '../components/PinnedSubheaderList'; 
 
-let video;
-let handLandmarker;
-let lastVideoTime = -1;
 let fps = 0;
 let lastTime = Date.now();
+const predictionCooldownTime = 5000;
 
 const HandTrackingScreen = () => {
-    const navigate = useNavigate(); // Hook to access the history object
-    const mainCanvasRef = useRef(null);
+    const [isChatVisible, setIsChatVisible] = useState(false);
+
+    const toggleChat = () => setIsChatVisible(!isChatVisible);
+    const navigate = useNavigate();
     const fpsCanvasRef = useRef(null);
-    const [isCanvasVisible, setCanvasVisibility] = useState(true);
+    const videoRef = useRef(null);
+    const mainCanvasRef = useRef(null); 
+    
+    const [model, setModel] = useState(null);
+    const [sequence, setSequence] = useState([]);
+    const [sentence, setSentence] = useState([]);
+    const [predictions, setPredictions] = useState([]);
+
+
+    const [showOverlay, setShowOverlay] = useState(false);
+    const [isCanvasVisible, setIsCanvasVisible] = useState(true);
+    const [isModelLoaded, setIsModelLoaded] = useState(false);
+    const [isCooldownActive, setIsCooldownActive] = useState(false);
+
+    const [predictedAction, setPredictedAction] = useState('None');
+
 
     const toggleCanvasVisibility = () => {
         setCanvasVisibility(!isCanvasVisible);
     };
 
-    const handleBackButtonClick = () => {
-        cleanupResources();
+    const handleHomeClick = () => {
         navigate('/');
-      };
-    
-    const cleanupResources = () => {
-        if (handLandmarker) {
-            handLandmarker.close();
-            handLandmarker = null;
-        }
+      };    
 
-        // Stop the video stream or perform any necessary cleanup
-        if (video) {
-            video.removeEventListener('loadeddata', predict);
-            video.srcObject?.getTracks().forEach((track) => track.stop());
-            video.srcObject = null;
-        }
-    };
+    // const actions = ['hello', 'what is your name?', 'my name is', 'how are you?', 'im fine', 'thank you', 'goodbye'];
+    // const actions = ['artist', 'hello', 'good'];
+    const actions = ['skill', 'pretty', 'good', 'expert', 'delicious', 'beautiful', 'wonderful', 'awesome'];
+    const threshold = 0.5;
+    const sequenceLength = 30; // Length of the sequence for the LSTM model
 
-    const setup = async () => {
-        cleanupResources();
-        
-        const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
-        handLandmarker = await HandLandmarker.createFromOptions(
-        vision,
-        {
-            baseOptions: {
-            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
-            delegate: "GPU"
-            },
-            runningMode: 2,
-            numHands: 2
-        }
-        );
 
-        video = document.getElementById("video");
-        navigator.mediaDevices.getUserMedia({
-        video: { width: 1000, height: 600 },
-        audio: false
-        }).then((stream) => {
-        video.srcObject = stream;
-        video.addEventListener('loadeddata', predict);
-        });
-    };
+    const normalizeKeyPoints = (results, frameWidth, frameHeight) => {
+        const pose = results.poseLandmarks ? results.poseLandmarks.map(lm => [lm.x, lm.y, lm.z, lm.visibility]) : new Array(33).fill([0, 0, 0, 0]);
+        const face = results.faceLandmarks ? results.faceLandmarks.map(lm => [lm.x, lm.y, lm.z]) : new Array(468).fill([0, 0, 0]);
+        const lh = results.leftHandLandmarks ? results.leftHandLandmarks.map(lm => [lm.x, lm.y, lm.z]) : new Array(21).fill([0, 0, 0]);
+        const rh = results.rightHandLandmarks ? results.rightHandLandmarks.map(lm => [lm.x, lm.y, lm.z]) : new Array(21).fill([0, 0, 0]);
 
-    const drawLandmarks = (landmarks) => {
-        const mainCanvas = mainCanvasRef.current;
-
-        if (!mainCanvas) {
-            return;
-        }
-
-        const mainContext = mainCanvas.getContext('2d');
-        mainContext.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-
-        if (landmarks && landmarks.length > 0) {
-        landmarks.forEach((handLandmarks) => {
-            const fingers = [
-            [0, 1, 2, 3, 4],   // Thumb
-            [0, 5, 6, 7, 8],   // Index finger
-            [0, 9, 10, 11, 12], // Middle finger
-            [0, 13, 14, 15, 16],// Ring finger
-            [0, 17, 18, 19, 20] // Pinky finger
-            ];
-
-            // Connect points for each finger
-            fingers.forEach((fingerPoints) => {
-            // Draw lines connecting the finger points
-            mainContext.beginPath();
-            fingerPoints.forEach((index, i, arr) => {
-                const x = handLandmarks[index].x * mainCanvas.width;
-                const y = handLandmarks[index].y * mainCanvas.height;
-
-                if (i === 0) {
-                mainContext.moveTo(x, y);
-                } else {
-                mainContext.lineTo(x, y);
-                }
-            });
-
-            mainContext.strokeStyle = 'black';
-            mainContext.lineWidth = 4;
-            mainContext.stroke();
-            });
-
-            const specificPoints = [5, 9, 13, 17];
-            mainContext.beginPath();
-            specificPoints.forEach((index, i, arr) => {
-            const x = handLandmarks[index].x * mainCanvas.width;
-            const y = handLandmarks[index].y * mainCanvas.height;
-
-            if (i === 0) {
-                mainContext.moveTo(x, y);
-            } else {
-                mainContext.lineTo(x, y);
+        // Normalization
+        [pose, face, lh, rh].forEach(keypoints => {
+            for (let i = 0; i < keypoints.length; i++) {
+                keypoints[i][0] /= frameWidth;
+                keypoints[i][1] /= frameHeight;
             }
-            });
-
-            mainContext.strokeStyle = 'black'; 
-            mainContext.lineWidth = 4;
-            mainContext.stroke();
-
-            // Draw circles at each finger point
-            fingers.forEach((fingerPoints) => {
-            fingerPoints.forEach((index) => {
-                const x = handLandmarks[index].x * mainCanvas.width;
-                const y = handLandmarks[index].y * mainCanvas.height;
-
-                mainContext.beginPath();
-                mainContext.arc(x, y, 10, 0, 2 * Math.PI);
-                mainContext.fillStyle = 'red';
-                mainContext.fill();
-                mainContext.stroke();
-            });
-            });
         });
-        }
-
-        // Draw FPS
-        const fpsCanvas = fpsCanvasRef.current;
-        const fpsContext = fpsCanvas.getContext('2d');
-        fpsContext.clearRect(0, 0, fpsCanvas.width, fpsCanvas.height);
-        fpsContext.font = '30px Arial';
-        fpsContext.fillStyle = 'lime'; // Neon color
-        fpsContext.fillText(`FPS: ${fps}`, 10, 30);
+    
+        return [].concat(...pose, ...face, ...lh, ...rh).flat();
     };
 
-    const predict = () => {
-        const nowInMs = Date.now();
-        const elapsed = nowInMs - lastTime;
-        lastTime = nowInMs;
-
-        // Calculate FPS
-        fps = Math.round(1000 / elapsed);
-
-        if (!handLandmarker) {
-            console.error('handLandmarker is null');
-            return;
-        }
-
-        if (lastVideoTime !== video.currentTime) {
-                lastVideoTime = video.currentTime;
-                // Check if detectForVideo is available
-                if (!handLandmarker.detectForVideo) {
-                    console.error('detectForVideo is not available on handLandmarker');
-                    return;
-                }
-                const result = handLandmarker.detectForVideo(video, Date.now());
-                console.log(result.landmarks)
-                drawLandmarks(result.landmarks);
-        }
-        requestAnimationFrame(predict);
+    const updateSequence = (newKeyPoints) => {
+        setSequence(prevSequence => {
+            const newSequence = [...prevSequence, newKeyPoints].slice(-sequenceLength);
+            return newSequence;
+        });
     };
+
+    // Function to make a prediction
+    const makePrediction = async (sequence) => {
+        if (isCooldownActive) return;
+        // Reshape the sequence for the model input
+        const inputData = tf.tensor([sequence]); // Shape will be [1, 30, 1662]
+        const predictionTensor = await model.predict(inputData);
+
+        const predictionArray = await predictionTensor.array();
+        const probabilities = predictionArray[0]; // Probabilities for each class
+        const predictedIndex = tf.argMax(probabilities).dataSync()[0];
+        const maxProbability = Math.max(...probabilities); // Maximum probability value
+
+        if (maxProbability > threshold) {
+            const action = actions[predictedIndex];
+            console.log(action);
+            setPredictedAction(action); // Update the state with the predicted action
+        } else {
+            setPredictedAction('Unknown');
+        }
+
+        setIsCooldownActive(true);
+        setTimeout(() => setIsCooldownActive(false), predictionCooldownTime);
+
+        return predictedAction;
+    };
+
+    // useEffect to watch sequence changes
+    useEffect(() => {
+        if (sequence.length === sequenceLength) {
+            makePrediction(sequence);
+        }
+    }, [sequence]); // Depend on sequence
 
     useEffect(() => {
-        setup();
-        }, []);
+        const loadModel = async () => {
+            try {
+                const loadedModel = await tf.loadLayersModel('https://raw.githubusercontent.com/joshcrispo/asl-models/master/models/tfjs_lstm_model3/model.json');
+                setModel(loadedModel);
+                setIsModelLoaded(true);
+            } catch (error) {
+                console.error('Failed to load model', error);
+            }
+        };
 
-    return (
-        <div className='hand-tracking-screen'>
-            <div className='video-container'>
-                <video style={{ transform: 'scaleX(-1)' }} autoPlay id='video' />
-                {isCanvasVisible && (
-                    <canvas style={{ transform: 'scaleX(-1)' }} ref={mainCanvasRef} width={1000} height={600} />
-                )}
-                <canvas ref={fpsCanvasRef} />
+        loadModel();
+    }, []);
+  
+    useEffect(() => {
+
+        if (!isModelLoaded) return;
+
+        const videoElement = videoRef.current;
+        const canvasElement = mainCanvasRef.current;
+        const canvasCtx = canvasElement.getContext('2d');
+
+
+        const holistic = new Holistic({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`,
+        });
+
+        holistic.setOptions({
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5,
+        });
+
+        holistic.onResults(async (results) => {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            // Only overwrite existing pixels.
+            canvasCtx.globalCompositeOperation = 'source-in';
+            canvasCtx.fillStyle = '#00FF00';
+            canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+
+            // Only overwrite missing pixels.
+            canvasCtx.globalCompositeOperation = 'destination-atop';
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+        
+            
+            canvasCtx.globalCompositeOperation = 'source-over';
+            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
+                            {color: '#00FF00', lineWidth: 4});
+            drawLandmarks(canvasCtx, results.poseLandmarks,
+                            {color: '#FF0000', lineWidth: 2});
+            drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION,
+                            {color: '#C0C0C070', lineWidth: 1});
+            drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS,
+                            {color: '#CC0000', lineWidth: 5});
+            drawLandmarks(canvasCtx, results.leftHandLandmarks,
+                            {color: '#00FF00', lineWidth: 2});
+            drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS,
+                            {color: '#00CC00', lineWidth: 5});
+            drawLandmarks(canvasCtx, results.rightHandLandmarks,
+                            {color: '#FF0000', lineWidth: 2});
+            
+            canvasCtx.restore();
+
+            // Draw FPS
+            const fpsCanvas = fpsCanvasRef.current;
+            const fpsContext = fpsCanvas.getContext('2d');
+            fpsContext.clearRect(0, 0, fpsCanvas.width, fpsCanvas.height);
+            fpsContext.font = '30px Arial';
+            fpsContext.fillStyle = 'lime'; // Neon color
+            fpsContext.fillText(`FPS: ${fps}`, 10, 30);
+
+            // Normalize keypoints
+            const frameWidth = videoElement.videoWidth;
+            const frameHeight = videoElement.videoHeight;
+            const normalizedKeyPoints = normalizeKeyPoints(results, frameWidth, frameHeight);
+
+            const nowInMs = Date.now();
+            const elapsed = nowInMs - lastTime;
+            lastTime = nowInMs;
+
+            // Calculate FPS
+            fps = Math.round(1000 / elapsed);
+            
+            updateSequence(normalizedKeyPoints);
+
+        }); 
+        
+        const camera = new Camera(videoElement, {
+        onFrame: async () => {
+            await holistic.send({ image: videoElement });
+        },
+        width: 720,
+        height: 450,
+        });
+
+        camera.start();
+
+        return () => {
+        camera.stop();
+        holistic.close();
+    };
+}, [isModelLoaded]);
+
+return (
+    <div className='hand-tracking-screen'>
+        <div className="headerHandTracking">
+            <div className="iconsContainer">
+                <HomeIcon className="icon" fontSize='large'/>
+                <InfoIcon className="icon" fontSize='large'/>
             </div>
-            <div>
-                <Button className='back-button' style={{ margin: 5 }} variant="outlined" onClick={handleBackButtonClick}>
-                    &#x2190; Back
-                </Button>
-                <Button className='toggle-canvas-button' style={{ margin: 5 }} variant="outlined" onClick={toggleCanvasVisibility}>
-                    {isCanvasVisible ? 'Hide Canvas' : 'Show Canvas'}
-                </Button>
+            <h3 className="logo">SignIT</h3>
+        </div>
+        <h1>TEST YOURSELF</h1>
+        <div className="main-content">
+            <div className="menu-container">
+                <PinnedSubheaderList />
+            </div>
+            <div className='video-container'>
+                <video style={{ transform: 'scaleX(-1)' }} autoPlay ref={videoRef} />
+                {isCanvasVisible && (
+                    // Ensure the canvas covers the video and is also mirrored
+                    <canvas style={{ 
+                        top: 0,
+                        left: 0,
+                        transform: 'scaleX(-1)',
+                        width: '100%',
+                        height: '100%'
+                    }} ref={mainCanvasRef} width={720} height={450} />
+                )}
+
+                {/* FPS canvas without mirroring effect */}
+                <canvas style={{
+                    position: 'absolute',
+                    bottom: 0, // Position it at the bottom or top as you prefer
+                    left: '50%',
+                    transform: 'translateX(-1)', // Center the FPS counter horizontally
+                    width: '200px', // Specify the width as needed
+                    height: '150px' // Specify the height as needed
+                }} ref={fpsCanvasRef} />
             </div>
         </div>
-    );
+        <div className='prediction-container'>
+            <p>{predictedAction}</p>
+        </div>
+
+        {sentence.length > 0 && (
+            <div className='sentence'>
+                <p>{sentence}</p>
+            </div>
+        )}
+        <button className="floatingButton" onClick={toggleChat}>?</button>
+        {isChatVisible && (
+        <div className={`chatBox ${isChatVisible ? 'chatBox-visible' : ''}`}>
+            <p>Don't know any sign language? Don't worry, head over to the tutorial in our Get Started section.</p>
+            <div className="button-center">
+                <button className="reusable-button-style" onClick={toggleChat}>Close</button>
+            </div>
+        </div>
+        )}
+    </div>
+);
+
 };
+
 export default HandTrackingScreen;

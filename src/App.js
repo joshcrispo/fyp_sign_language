@@ -1,14 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainScreen from './screens/MainScreen';
-import AboutScreen from './screens/AboutScreen';
+import TutorialScreen from './screens/TutorialScreen';
 import HandTrackingScreen from './screens/HandTrackingScreen';
 
 const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/about" element={<AboutScreen />} />
+        <Route path="/tutorial" element={<TutorialScreen />} />
         <Route path="/handtracking" element={<HandTrackingScreen />} />
         <Route path="/" element={<MainScreen />} />
       </Routes>

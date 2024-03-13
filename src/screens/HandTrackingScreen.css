@@ -25,3 +25,24 @@ canvas {
     z-index: 1;
 }
   
+.hand-tracking-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.video-container {
+    position: relative;
+}
+
+.prediction-container {
+    margin-top: 10px;
+    font-size: 20px;
+    color: #f3f3d6;
+}
+
+.sentence {
+    margin-top: 10px;
+    font-size: 20px;
+    color: #f3f3d6;
+}
