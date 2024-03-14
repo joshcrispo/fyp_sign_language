@@ -8,6 +8,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import HelpIcon from '@mui/icons-material/Help';
 import InfoIcon from '@mui/icons-material/Info';
 import * as tf from '@tensorflow/tfjs';
+import axios from 'axios';
 import PinnedSubheaderList from '../components/PinnedSubheaderList'; 
 
 let fps = 0;
@@ -27,9 +28,8 @@ const HandTrackingScreen = () => {
     const [sequence, setSequence] = useState([]);
     const [sentence, setSentence] = useState([]);
     const [predictions, setPredictions] = useState([]);
+    const [keypointSequences, setKeypointSequences] = useState([]);
 
-
-    const [showOverlay, setShowOverlay] = useState(false);
     const [isCanvasVisible, setIsCanvasVisible] = useState(true);
     const [isModelLoaded, setIsModelLoaded] = useState(false);
     const [isCooldownActive, setIsCooldownActive] = useState(false);
@@ -51,6 +51,12 @@ const HandTrackingScreen = () => {
     const threshold = 0.5;
     const sequenceLength = 30; // Length of the sequence for the LSTM model
 
+    const accumulateKeypoints = (newKeypoints) => {
+        setKeypointSequences(prev => {
+            const newSequence = [...prev, newKeypoints].slice(-30);
+            return newSequence;
+        });    
+    };
 
     const normalizeKeyPoints = (results, frameWidth, frameHeight) => {
         const pose = results.poseLandmarks ? results.poseLandmarks.map(lm => [lm.x, lm.y, lm.z, lm.visibility]) : new Array(33).fill([0, 0, 0, 0]);
@@ -74,6 +80,28 @@ const HandTrackingScreen = () => {
             const newSequence = [...prevSequence, newKeyPoints].slice(-sequenceLength);
             return newSequence;
         });
+    };
+    
+
+    const handlePredict = async () => {
+        // Assuming you have a state or way to specify which model is selected
+        const model_name = "aslmodel_v2.h5"; // Example, replace with actual model name as needed
+        if (keypointSequences.length !== 30) {
+            alert("Not enough data for prediction. Please wait until 30 sequences of keypoints are accumulated.");
+            return;
+        }
+        
+        try {
+            const response = await axios.post('http://127.0.0.1:7860/api/predict/', {
+                data: [
+                    model_name, // First input corresponding to the dropdown
+                    JSON.stringify(keypointSequences.flat()) // Second input as a JSON string (or another format that matches your Gradio function's expectation)
+                ]
+            });
+            console.log("Prediction response:", response.data);
+        } catch (error) {
+            console.error("Error during prediction:", error);
+        }
     };
 
     // Function to make a prediction
@@ -186,6 +214,7 @@ const HandTrackingScreen = () => {
             const frameWidth = videoElement.videoWidth;
             const frameHeight = videoElement.videoHeight;
             const normalizedKeyPoints = normalizeKeyPoints(results, frameWidth, frameHeight);
+            accumulateKeypoints(normalizedKeyPoints); // Ensure this is called here
 
             const nowInMs = Date.now();
             const elapsed = nowInMs - lastTime;
@@ -252,9 +281,12 @@ return (
                 }} ref={fpsCanvasRef} />
             </div>
         </div>
+        <button className="reusable-button-style" onClick={handlePredict}>Begin Prediction</button>
+
         <div className='prediction-container'>
             <p>{predictedAction}</p>
         </div>
+        
 
         {sentence.length > 0 && (
             <div className='sentence'>
