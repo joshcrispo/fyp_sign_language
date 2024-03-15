@@ -7,7 +7,6 @@ import Button from '@mui/material/Button';
 import HomeIcon from '@mui/icons-material/Home';
 import HelpIcon from '@mui/icons-material/Help';
 import InfoIcon from '@mui/icons-material/Info';
-import * as tf from '@tensorflow/tfjs';
 import axios from 'axios';
 import PinnedSubheaderList from '../components/PinnedSubheaderList'; 
 
@@ -17,6 +16,8 @@ const predictionCooldownTime = 5000;
 
 const HandTrackingScreen = () => {
     const [isChatVisible, setIsChatVisible] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+
 
     const toggleChat = () => setIsChatVisible(!isChatVisible);
     const navigate = useNavigate();
@@ -24,36 +25,18 @@ const HandTrackingScreen = () => {
     const videoRef = useRef(null);
     const mainCanvasRef = useRef(null); 
     
-    const [model, setModel] = useState(null);
-    const [sequence, setSequence] = useState([]);
-    const [sentence, setSentence] = useState([]);
-    const [predictions, setPredictions] = useState([]);
     const [keypointSequences, setKeypointSequences] = useState([]);
 
     const [isCanvasVisible, setIsCanvasVisible] = useState(true);
-    const [isModelLoaded, setIsModelLoaded] = useState(false);
-    const [isCooldownActive, setIsCooldownActive] = useState(false);
-
-    const [predictedAction, setPredictedAction] = useState('None');
-
-
-    const toggleCanvasVisibility = () => {
-        setCanvasVisibility(!isCanvasVisible);
-    };
 
     const handleHomeClick = () => {
         navigate('/');
       };    
 
-    // const actions = ['hello', 'what is your name?', 'my name is', 'how are you?', 'im fine', 'thank you', 'goodbye'];
-    // const actions = ['artist', 'hello', 'good'];
-    const actions = ['skill', 'pretty', 'good', 'expert', 'delicious', 'beautiful', 'wonderful', 'awesome'];
-    const threshold = 0.5;
-    const sequenceLength = 30; // Length of the sequence for the LSTM model
 
     const accumulateKeypoints = (newKeypoints) => {
         setKeypointSequences(prev => {
-            const newSequence = [...prev, newKeypoints].slice(-30);
+            const newSequence = [...prev, newKeypoints].slice(-40);
             return newSequence;
         });    
     };
@@ -75,18 +58,21 @@ const HandTrackingScreen = () => {
         return [].concat(...pose, ...face, ...lh, ...rh).flat();
     };
 
-    const updateSequence = (newKeyPoints) => {
-        setSequence(prevSequence => {
-            const newSequence = [...prevSequence, newKeyPoints].slice(-sequenceLength);
-            return newSequence;
-        });
+
+    const handleBeginPrediction = () => {
+        setKeypointSequences([]);
+        setIsRecording(true);
+        
+        setTimeout(() => {
+            setIsRecording(false);
+            handlePredict();
+        }, 5000);
     };
-    
 
     const handlePredict = async () => {
-        // Assuming you have a state or way to specify which model is selected
-        const model_name = "aslmodel_v2.h5"; // Example, replace with actual model name as needed
-        if (keypointSequences.length !== 30) {
+        console.log(keypointSequences.length);
+        const model_name = "test.h5"; // Example, replace with actual model name as needed
+        if (keypointSequences.length < 0) {
             alert("Not enough data for prediction. Please wait until 30 sequences of keypoints are accumulated.");
             return;
         }
@@ -103,57 +89,8 @@ const HandTrackingScreen = () => {
             console.error("Error during prediction:", error);
         }
     };
-
-    // Function to make a prediction
-    const makePrediction = async (sequence) => {
-        if (isCooldownActive) return;
-        // Reshape the sequence for the model input
-        const inputData = tf.tensor([sequence]); // Shape will be [1, 30, 1662]
-        const predictionTensor = await model.predict(inputData);
-
-        const predictionArray = await predictionTensor.array();
-        const probabilities = predictionArray[0]; // Probabilities for each class
-        const predictedIndex = tf.argMax(probabilities).dataSync()[0];
-        const maxProbability = Math.max(...probabilities); // Maximum probability value
-
-        if (maxProbability > threshold) {
-            const action = actions[predictedIndex];
-            console.log(action);
-            setPredictedAction(action); // Update the state with the predicted action
-        } else {
-            setPredictedAction('Unknown');
-        }
-
-        setIsCooldownActive(true);
-        setTimeout(() => setIsCooldownActive(false), predictionCooldownTime);
-
-        return predictedAction;
-    };
-
-    // useEffect to watch sequence changes
-    useEffect(() => {
-        if (sequence.length === sequenceLength) {
-            makePrediction(sequence);
-        }
-    }, [sequence]); // Depend on sequence
-
-    useEffect(() => {
-        const loadModel = async () => {
-            try {
-                const loadedModel = await tf.loadLayersModel('https://raw.githubusercontent.com/joshcrispo/asl-models/master/models/tfjs_lstm_model3/model.json');
-                setModel(loadedModel);
-                setIsModelLoaded(true);
-            } catch (error) {
-                console.error('Failed to load model', error);
-            }
-        };
-
-        loadModel();
-    }, []);
   
     useEffect(() => {
-
-        if (!isModelLoaded) return;
 
         const videoElement = videoRef.current;
         const canvasElement = mainCanvasRef.current;
@@ -216,6 +153,11 @@ const HandTrackingScreen = () => {
             const normalizedKeyPoints = normalizeKeyPoints(results, frameWidth, frameHeight);
             accumulateKeypoints(normalizedKeyPoints); // Ensure this is called here
 
+            if (isRecording) {
+                const normalizedKeyPoints = normalizeKeyPoints(results, frameWidth, frameHeight);
+                accumulateKeypoints(normalizedKeyPoints);
+            }
+
             const nowInMs = Date.now();
             const elapsed = nowInMs - lastTime;
             lastTime = nowInMs;
@@ -223,8 +165,6 @@ const HandTrackingScreen = () => {
             // Calculate FPS
             fps = Math.round(1000 / elapsed);
             
-            updateSequence(normalizedKeyPoints);
-
         }); 
         
         const camera = new Camera(videoElement, {
@@ -241,7 +181,7 @@ const HandTrackingScreen = () => {
         camera.stop();
         holistic.close();
     };
-}, [isModelLoaded]);
+}, []);
 
 return (
     <div className='hand-tracking-screen'>
@@ -281,18 +221,8 @@ return (
                 }} ref={fpsCanvasRef} />
             </div>
         </div>
-        <button className="reusable-button-style" onClick={handlePredict}>Begin Prediction</button>
+        <button className="reusable-button-style" onClick={handleBeginPrediction}>Begin Prediction</button>
 
-        <div className='prediction-container'>
-            <p>{predictedAction}</p>
-        </div>
-        
-
-        {sentence.length > 0 && (
-            <div className='sentence'>
-                <p>{sentence}</p>
-            </div>
-        )}
         <button className="floatingButton" onClick={toggleChat}>?</button>
         {isChatVisible && (
         <div className={`chatBox ${isChatVisible ? 'chatBox-visible' : ''}`}>
