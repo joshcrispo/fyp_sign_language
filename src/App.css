@@ -55,6 +55,7 @@ body, html {
   position: absolute;
   bottom: 20px;
   animation: bounce 2s infinite;
+  padding-bottom: 2rem;
 }
 
 
@@ -77,8 +78,7 @@ h3 {
 }
 
 p {
-  margin-top: 1rem; /* Adjust the space above the p as needed */
-  margin-bottom: 2rem; /* Provide some space above the arrow */
+  margin-top: 0.5rem; /* Adjust the space above the p as needed */
 }
 
 .getStartedSection {
@@ -213,7 +213,7 @@ p {
   }
 }
 
-/* HandTrackingScreen Specific */
+/* HandTrackingScreen */
 .hand-tracking-screen {
   display: flex;
   flex-direction: column;
@@ -231,6 +231,99 @@ p {
   padding: 1rem;
 }
 
+
+/* Loading */
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3); /* Light grey */
+  border-top: 4px solid #ffffff; /* White */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 2s linear infinite;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #7031D8; /* Same as page background */
+  color: #ffffff; /* Text color */
+  font-size: 20px; /* Loading text size */
+  z-index: 2; /* Ensure it's on top of the video/canvas */
+}
+
+.prediction-container {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  padding: 0rem;
+}
+
+.prediction-container p {
+  font-size: 24px;
+  font-weight:bold; 
+}
+.main-content {
+  display: flex;
+  width: 100%;
+  flex-grow: 1;
+  margin-top: 2rem;
+}
+
+
+.menu-container {
+  padding-right: 10rem;
+  flex: 0 1 30%;
+  padding: 0 2rem;
+}
+
+.menu-container .reusable-button-style {
+  width: 100%; 
+  font-size: 16px;
+  font-weight:bold; 
+}
+
+.video-container {
+  position: relative;
+  height: 442px;
+  width: 50vw;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex: 0 1 70%; 
+  padding: 0 2rem; 
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  height: auto;
+}
+
+/* Tutorial */
 .tutorial-screen {
   display: flex;
   flex-direction: column;
@@ -249,55 +342,7 @@ p {
   padding: 1rem;
 }
 
-
-
-.main-content {
-  display: flex;
-  width: 100%;
-  flex-grow: 1;
-  margin-top: 2rem;
-}
-
-.menu-container, .video-container {
-  /* Adjust padding as needed to avoid content being flush against the screen edge */
-  padding: 0.5rem;
-}
-
-.menu-container {
-  padding-right: 10rem;
-}
-
-.video-container {
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  padding-left: 5rem;
-}
-
-.menu-container {
-  flex: 0 1 30%; /* flex-grow, flex-shrink, flex-basis */
-  max-height: 480;
-  padding: 0 2rem; /* Optional: adds some space inside the container */
-  /* Additional styling for the menu container */
-}
-
-.video-container {
-  flex: 0 1 70%; /* flex-grow, flex-shrink, flex-basis */
-  /* flex-basis: 60%; Another way to set initial width */
-  /* Ensure it doesn't grow beyond 60%, can shrink if needed */
-  padding: 0 2rem; /* Optional: adds some space around the video */
-  /* Your existing video container styles */
-}
-
-
-video {
-  max-width: 100%;
-}
-
-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
+.tutorial-container iframe {
+  width: 50vw; /* 60% of the viewport width */
+  border-radius: 16px; 
 }

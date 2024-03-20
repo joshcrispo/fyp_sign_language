@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Holistic, POSE_CONNECTIONS, FACEMESH_TESSELATION, HAND_CONNECTIONS } from '@mediapipe/holistic';
 import { Camera } from '@mediapipe/camera_utils';
 import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
-import Button from '@mui/material/Button';
 import HomeIcon from '@mui/icons-material/Home';
-import HelpIcon from '@mui/icons-material/Help';
 import InfoIcon from '@mui/icons-material/Info';
+import SchoolIcon from '@mui/icons-material/School';
 import axios from 'axios';
 import PinnedSubheaderList from '../components/PinnedSubheaderList'; 
 
@@ -15,13 +14,32 @@ let lastTime = Date.now();
 const predictionCooldownTime = 5000;
 
 const HandTrackingScreen = () => {
+
+    const modelMapping = {
+        'Default Model': { file: 'aslmodel_v2.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
+        'Greetings': { file: 'aslgreetings.h5', videoId: 'QHFgzC026rM?si=WUHC9k8_mPsvjdQU' },
+        'Compliments': { file: 'aslcompliments.h5', videoId: 'uvYgwXS3zlw?si=dzPX14pRb8XPi1Gj' },
+        'Test': { file: 'test.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
+        'Test1': { file: 'aslcompliments.h5', videoId: 'QHFgzC026rM' },
+        'Test2': { file: 'aslcompliments.h5', videoId: 'uvYgwXS3zlw' },
+        'Test3': { file: 'aslcompliments.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
+        'Test4': { file: 'aslcompliments.h5', videoId: 'QHFgzC026rM' },
+        'Test5': { file: 'aslcompliments.h5', videoId: 'uvYgwXS3zlw' },
+        'Test6': { file: 'aslcompliments.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
+        'Test7': { file: 'aslcompliments.h5', videoId: 'QHFgzC026rM' }
+    };
+
+    const [predictionResult, setPredictionResult] = useState('Press Begin Prediction');
+
+    const [selectedModel, setSelectedModel] = useState('aslmodel_v2.h5'); // Default first model
+
     const [isChatVisible, setIsChatVisible] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
-
+    const [isLoading, setIsLoading] = useState(true);
 
     const toggleChat = () => setIsChatVisible(!isChatVisible);
     const navigate = useNavigate();
-    const fpsCanvasRef = useRef(null);
+    //const fpsCanvasRef = useRef(null);
     const videoRef = useRef(null);
     const mainCanvasRef = useRef(null); 
     
@@ -31,12 +49,15 @@ const HandTrackingScreen = () => {
 
     const handleHomeClick = () => {
         navigate('/');
-      };    
+    };    
 
+    const handleTutorialClick = () => {
+        navigate('/tutorial')
+    };
 
     const accumulateKeypoints = (newKeypoints) => {
         setKeypointSequences(prev => {
-            const newSequence = [...prev, newKeypoints].slice(-40);
+            const newSequence = [...prev, newKeypoints].slice(-30);
             return newSequence;
         });    
     };
@@ -58,10 +79,14 @@ const HandTrackingScreen = () => {
         return [].concat(...pose, ...face, ...lh, ...rh).flat();
     };
 
+    const handleModelSelect = (modelName) => {
+        setSelectedModel(modelMapping[modelName].file);
+    };
 
     const handleBeginPrediction = () => {
         setKeypointSequences([]);
         setIsRecording(true);
+        setPredictionResult("Predicting...")
         
         setTimeout(() => {
             setIsRecording(false);
@@ -71,7 +96,7 @@ const HandTrackingScreen = () => {
 
     const handlePredict = async () => {
         console.log(keypointSequences.length);
-        const model_name = "test.h5"; // Example, replace with actual model name as needed
+        console.log(selectedModel);
         if (keypointSequences.length < 0) {
             alert("Not enough data for prediction. Please wait until 30 sequences of keypoints are accumulated.");
             return;
@@ -80,16 +105,27 @@ const HandTrackingScreen = () => {
         try {
             const response = await axios.post('http://127.0.0.1:7860/api/predict/', {
                 data: [
-                    model_name, // First input corresponding to the dropdown
+                    selectedModel,
                     JSON.stringify(keypointSequences.flat()) // Second input as a JSON string (or another format that matches your Gradio function's expectation)
                 ]
             });
             console.log("Prediction response:", response.data);
+            const resultString = response.data.data[0];
+            setPredictionResult(resultString); // Update the prediction result state
         } catch (error) {
             console.error("Error during prediction:", error);
+            setPredictionResult("Error during prediction.");
         }
     };
-  
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 3000);
+    
+        return () => clearTimeout(timer);
+    }, []);
+    
     useEffect(() => {
 
         const videoElement = videoRef.current;
@@ -140,12 +176,12 @@ const HandTrackingScreen = () => {
             canvasCtx.restore();
 
             // Draw FPS
-            const fpsCanvas = fpsCanvasRef.current;
-            const fpsContext = fpsCanvas.getContext('2d');
-            fpsContext.clearRect(0, 0, fpsCanvas.width, fpsCanvas.height);
-            fpsContext.font = '30px Arial';
-            fpsContext.fillStyle = 'lime'; // Neon color
-            fpsContext.fillText(`FPS: ${fps}`, 10, 30);
+            //const fpsCanvas = fpsCanvasRef.current;
+            //const fpsContext = fpsCanvas.getContext('2d');
+            //fpsContext.clearRect(0, 0, fpsCanvas.width, fpsCanvas.height);
+            //fpsContext.font = '30px Arial';
+            //fpsContext.fillStyle = 'lime'; // Neon color
+            //fpsContext.fillText(`FPS: ${fps}`, 10, 30);
 
             // Normalize keypoints
             const frameWidth = videoElement.videoWidth;
@@ -187,41 +223,58 @@ return (
     <div className='hand-tracking-screen'>
         <div className="headerHandTracking">
             <div className="iconsContainer">
-                <HomeIcon className="icon" fontSize='large'/>
+                <HomeIcon className="icon" fontSize='large' onClick={handleHomeClick}/>
                 <InfoIcon className="icon" fontSize='large'/>
+                <SchoolIcon className="icon" fontSize='large' onClick={handleTutorialClick}/>
             </div>
             <h3 className="logo">SignIT</h3>
         </div>
         <h1>TEST YOURSELF</h1>
         <div className="main-content">
             <div className="menu-container">
-                <PinnedSubheaderList />
+                <PinnedSubheaderList 
+                    models={Object.keys(modelMapping)}
+                    selectedModel={selectedModel}
+                    onModelSelect={(handleModelSelect)}
+                />
+                <button className="reusable-button-style" onClick={handleBeginPrediction}>Begin Prediction</button>
             </div>
-            <div className='video-container'>
-                <video style={{ transform: 'scaleX(-1)' }} autoPlay ref={videoRef} />
-                {isCanvasVisible && (
-                    // Ensure the canvas covers the video and is also mirrored
-                    <canvas style={{ 
-                        top: 0,
-                        left: 0,
-                        transform: 'scaleX(-1)',
-                        width: '100%',
-                        height: '100%'
-                    }} ref={mainCanvasRef} width={720} height={450} />
-                )}
+            <div>
+                <div className='video-container'>
+                    <div className="loading-spinner" style={{ display: isLoading ? 'flex' : 'none' }}>
+                        <div className="spinner"></div> {/* Animated spinner */}
+                    </div>
+                    <div className="video-content">
+                        
+                        <video style={{ transform: 'scaleX(-1)' }} autoPlay ref={videoRef} />
+                        {isCanvasVisible && (
+                            // Ensure the canvas covers the video and is also mirrored
+                            <canvas style={{ 
+                                top: 0,
+                                left: 0,
+                                transform: 'scaleX(-1)',
+                                width: '100%',
+                                height: '100%'
+                            }} ref={mainCanvasRef} width={720} height={450} />
+                        )}
 
-                {/* FPS canvas without mirroring effect */}
-                <canvas style={{
-                    position: 'absolute',
-                    bottom: 0, // Position it at the bottom or top as you prefer
-                    left: '50%',
-                    transform: 'translateX(-1)', // Center the FPS counter horizontally
-                    width: '200px', // Specify the width as needed
-                    height: '150px' // Specify the height as needed
-                }} ref={fpsCanvasRef} />
+                        {/* FPS canvas without mirroring effect 
+                        <canvas style={{
+                            position: 'absolute',
+                            bottom: 0, // Position it at the bottom or top as you prefer
+                            left: '50%',
+                            transform: 'translateX(-1)', // Center the FPS counter horizontally
+                            width: '200px', // Specify the width as needed
+                            height: '150px' // Specify the height as needed
+                        }} ref={fpsCanvasRef} />
+                        */}
+                    </div>
+                </div>
+                <div className='prediction-container'>
+                    <p>Prediction Result: {predictionResult}</p>
+                </div>
             </div>
         </div>
-        <button className="reusable-button-style" onClick={handleBeginPrediction}>Begin Prediction</button>
 
         <button className="floatingButton" onClick={toggleChat}>?</button>
         {isChatVisible && (

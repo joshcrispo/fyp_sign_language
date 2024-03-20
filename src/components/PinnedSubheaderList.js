@@ -1,10 +1,11 @@
 import * as React from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 
-export default function PinnedSubheaderList() {
+export default function PinnedSubheaderList({ models, selectedModel, onModelSelect }) {
   return (
     <List
     sx={{
@@ -13,6 +14,7 @@ export default function PinnedSubheaderList() {
       position: 'relative',
       overflow: 'auto',
       maxHeight: 450,
+      marginBottom: 2,
       borderRadius: '16px',
       boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
       '& ul': { padding: 0 },
@@ -32,9 +34,19 @@ export default function PinnedSubheaderList() {
       <li key="section-models">
         <ul>
           <ListSubheader>{`Models`}</ListSubheader>
-          {[...Array(10).keys()].map((item) => (
-            <ListItem key={`item-model-${item + 1}`}>
-              <ListItemText primary={`Model ${item + 1}`} />
+          {models.map((model, index) => (
+            <ListItem key={`item-model-${index}`} disablePadding>
+              <ListItemButton
+                onClick={() => onModelSelect(model)}
+                sx={{
+                  bgcolor: model === selectedModel ? 'rgba(255, 255, 255, 0.12)' : 'inherit',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                  },
+                }}
+              >
+                <ListItemText primary={model} />
+              </ListItemButton>
             </ListItem>
           ))}
         </ul>
