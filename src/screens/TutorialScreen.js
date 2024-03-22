@@ -4,25 +4,12 @@ import InfoIcon from '@mui/icons-material/Info';
 import PinnedSubheaderList from '../components/PinnedSubheaderList'; 
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'; // Play icon
 import { useNavigate } from 'react-router-dom';
+import { ModelMapping } from '../components/ModelMapping';
 
 const TutorialScreen = () => {
 
-  const modelMapping = {
-    'Default Model': { file: 'aslmodel_v2.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
-    'Greetings': { file: 'aslgreetings.h5', videoId: 'QHFgzC026rM?si=WUHC9k8_mPsvjdQU' },
-    'Compliments': { file: 'aslcompliments.h5', videoId: 'uvYgwXS3zlw?si=dzPX14pRb8XPi1Gj' },
-    'Test': { file: 'test.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
-    'Test1': { file: 'aslcompliments.h5', videoId: 'QHFgzC026rM' },
-    'Test2': { file: 'aslcompliments.h5', videoId: 'uvYgwXS3zlw' },
-    'Test3': { file: 'aslcompliments.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
-    'Test4': { file: 'aslcompliments.h5', videoId: 'QHFgzC026rM' },
-    'Test5': { file: 'aslcompliments.h5', videoId: 'uvYgwXS3zlw' },
-    'Test6': { file: 'aslcompliments.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
-    'Test7': { file: 'aslcompliments.h5', videoId: 'QHFgzC026rM' }
-};
-
   const [selectedModel, setSelectedModel] = useState('Default Model'); // Initialize with the name of the default model
-  const [selectedVideoId, setSelectedVideoId] = useState(modelMapping['Default Model'].videoId); // Initialize video ID state  
+  const [selectedVideoId, setSelectedVideoId] = useState(ModelMapping['Default Model'].videoId); // Initialize video ID state  
 
   const navigate = useNavigate();
 
@@ -40,7 +27,7 @@ const TutorialScreen = () => {
 
   const handleModelSelect = (modelName) => {
     setSelectedModel(modelName);
-    const videoId = modelMapping[modelName].videoId;
+    const videoId = ModelMapping[modelName].videoId;
     setSelectedVideoId(videoId);
   };
 
@@ -59,7 +46,7 @@ const TutorialScreen = () => {
       <div className="main-content">
           <div className="menu-container">
             <PinnedSubheaderList 
-              models={Object.keys(modelMapping)}
+              models={Object.keys(ModelMapping)}
               selectedModel={selectedModel}
               onModelSelect={(handleModelSelect)}
             />

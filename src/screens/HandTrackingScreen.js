@@ -8,6 +8,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import SchoolIcon from '@mui/icons-material/School';
 import axios from 'axios';
 import PinnedSubheaderList from '../components/PinnedSubheaderList'; 
+import { ModelMapping } from '../components/ModelMapping';
 
 let fps = 0;
 let lastTime = Date.now();
@@ -15,23 +16,9 @@ const predictionCooldownTime = 5000;
 
 const HandTrackingScreen = () => {
 
-    const modelMapping = {
-        'Default Model': { file: 'aslmodel_v2.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
-        'Greetings': { file: 'aslgreetings.h5', videoId: 'QHFgzC026rM?si=WUHC9k8_mPsvjdQU' },
-        'Compliments': { file: 'aslcompliments.h5', videoId: 'uvYgwXS3zlw?si=dzPX14pRb8XPi1Gj' },
-        'Test': { file: 'test.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
-        'Test1': { file: 'aslcompliments.h5', videoId: 'QHFgzC026rM' },
-        'Test2': { file: 'aslcompliments.h5', videoId: 'uvYgwXS3zlw' },
-        'Test3': { file: 'aslcompliments.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
-        'Test4': { file: 'aslcompliments.h5', videoId: 'QHFgzC026rM' },
-        'Test5': { file: 'aslcompliments.h5', videoId: 'uvYgwXS3zlw' },
-        'Test6': { file: 'aslcompliments.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
-        'Test7': { file: 'aslcompliments.h5', videoId: 'QHFgzC026rM' }
-    };
-
     const [predictionResult, setPredictionResult] = useState('Press Begin Prediction');
 
-    const [selectedModel, setSelectedModel] = useState('aslmodel_v2.h5'); // Default first model
+    const [selectedModel, setSelectedModel] = useState('Default Model');
 
     const [isChatVisible, setIsChatVisible] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
@@ -56,31 +43,42 @@ const HandTrackingScreen = () => {
     };
 
     const accumulateKeypoints = (newKeypoints) => {
+        
         setKeypointSequences(prev => {
-            const newSequence = [...prev, newKeypoints].slice(-30);
+            const newSequence = [...prev, newKeypoints].slice(-40);
             return newSequence;
         });    
     };
 
     const normalizeKeyPoints = (results, frameWidth, frameHeight) => {
         const pose = results.poseLandmarks ? results.poseLandmarks.map(lm => [lm.x, lm.y, lm.z, lm.visibility]) : new Array(33).fill([0, 0, 0, 0]);
-        const face = results.faceLandmarks ? results.faceLandmarks.map(lm => [lm.x, lm.y, lm.z]) : new Array(468).fill([0, 0, 0]);
+        // const face = results.faceLandmarks ? results.faceLandmarks.map(lm => [lm.x, lm.y, lm.z]) : new Array(468).fill([0, 0, 0]);
         const lh = results.leftHandLandmarks ? results.leftHandLandmarks.map(lm => [lm.x, lm.y, lm.z]) : new Array(21).fill([0, 0, 0]);
         const rh = results.rightHandLandmarks ? results.rightHandLandmarks.map(lm => [lm.x, lm.y, lm.z]) : new Array(21).fill([0, 0, 0]);
 
         // Normalization
+        /*
         [pose, face, lh, rh].forEach(keypoints => {
             for (let i = 0; i < keypoints.length; i++) {
                 keypoints[i][0] /= frameWidth;
                 keypoints[i][1] /= frameHeight;
             }
         });
-    
-        return [].concat(...pose, ...face, ...lh, ...rh).flat();
+        */
+
+        [pose, lh, rh].forEach(keypoints => {
+            for (let i = 0; i < keypoints.length; i++) {
+                keypoints[i][0] /= frameWidth;
+                keypoints[i][1] /= frameHeight;
+            }
+        });
+
+        // return [].concat(...pose, ...face, ...lh, ...rh).flat();
+        return [].concat(...pose, ...lh, ...rh).flat();
     };
 
     const handleModelSelect = (modelName) => {
-        setSelectedModel(modelMapping[modelName].file);
+        setSelectedModel(modelName);
     };
 
     const handleBeginPrediction = () => {
@@ -160,10 +158,10 @@ const HandTrackingScreen = () => {
             canvasCtx.globalCompositeOperation = 'source-over';
             drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
                             {color: '#00FF00', lineWidth: 4});
-            drawLandmarks(canvasCtx, results.poseLandmarks,
-                            {color: '#FF0000', lineWidth: 2});
-            drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION,
-                            {color: '#C0C0C070', lineWidth: 1});
+            //drawLandmarks(canvasCtx, results.poseLandmarks,
+            //                {color: '#FF0000', lineWidth: 2});
+            //drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION,
+            //                {color: '#C0C0C070', lineWidth: 1});
             drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS,
                             {color: '#CC0000', lineWidth: 5});
             drawLandmarks(canvasCtx, results.leftHandLandmarks,
@@ -233,7 +231,7 @@ return (
         <div className="main-content">
             <div className="menu-container">
                 <PinnedSubheaderList 
-                    models={Object.keys(modelMapping)}
+                    models={Object.keys(ModelMapping)}
                     selectedModel={selectedModel}
                     onModelSelect={(handleModelSelect)}
                 />
