@@ -18,7 +18,7 @@ const HandTrackingScreen = () => {
 
     const [predictionResult, setPredictionResult] = useState('Press Begin Prediction');
 
-    const [selectedModel, setSelectedModel] = useState('Default Model');
+    const [selectedModel, setSelectedModel] = useState('Getting Started');
 
     const [isChatVisible, setIsChatVisible] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
@@ -46,11 +46,13 @@ const HandTrackingScreen = () => {
         
         setKeypointSequences(prev => {
             const newSequence = [...prev, newKeypoints].slice(-40);
+            console.log(newSequence.length);
             return newSequence;
         });    
     };
 
     const normalizeKeyPoints = (results, frameWidth, frameHeight) => {
+        
         const pose = results.poseLandmarks ? results.poseLandmarks.map(lm => [lm.x, lm.y, lm.z, lm.visibility]) : new Array(33).fill([0, 0, 0, 0]);
         // const face = results.faceLandmarks ? results.faceLandmarks.map(lm => [lm.x, lm.y, lm.z]) : new Array(468).fill([0, 0, 0]);
         const lh = results.leftHandLandmarks ? results.leftHandLandmarks.map(lm => [lm.x, lm.y, lm.z]) : new Array(21).fill([0, 0, 0]);
@@ -115,6 +117,10 @@ const HandTrackingScreen = () => {
             setPredictionResult("Error during prediction.");
         }
     };
+
+    useEffect(() => {
+        document.title = "SignIT | Prediction"; 
+      }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -183,7 +189,9 @@ const HandTrackingScreen = () => {
 
             // Normalize keypoints
             const frameWidth = videoElement.videoWidth;
+            console.log("Width: ",frameWidth);
             const frameHeight = videoElement.videoHeight;
+            console.log("Height: ", frameHeight);
             const normalizedKeyPoints = normalizeKeyPoints(results, frameWidth, frameHeight);
             accumulateKeypoints(normalizedKeyPoints); // Ensure this is called here
 
@@ -205,8 +213,8 @@ const HandTrackingScreen = () => {
         onFrame: async () => {
             await holistic.send({ image: videoElement });
         },
-        width: 720,
-        height: 450,
+        width: 1280,
+        height: 720,
         });
 
         camera.start();
@@ -253,7 +261,7 @@ return (
                                 transform: 'scaleX(-1)',
                                 width: '100%',
                                 height: '100%'
-                            }} ref={mainCanvasRef} width={720} height={450} />
+                            }} ref={mainCanvasRef} width={1280} height={720} />
                         )}
 
                         {/* FPS canvas without mirroring effect 
@@ -277,7 +285,11 @@ return (
         <button className="floatingButton" onClick={toggleChat}>?</button>
         {isChatVisible && (
         <div className={`chatBox ${isChatVisible ? 'chatBox-visible' : ''}`}>
-            <p>Don't know any sign language? Don't worry, head over to the tutorial in our Get Started section.</p>
+            <p>If you are experiencing some incorrect results try changing your position. You might be too close or too far from the camera.<br /><br />
+                Some troublesome categories:<br />
+                - Responses <br />
+                <br />
+                Don't know any sign language? Don't worry, head over to the tutorial in our Get Started section.</p>
             <div className="button-center">
                 <button className="reusable-button-style" onClick={toggleChat}>Close</button>
             </div>

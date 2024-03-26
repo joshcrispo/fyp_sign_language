@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import PinnedSubheaderList from '../components/PinnedSubheaderList'; 
@@ -8,8 +8,8 @@ import { ModelMapping } from '../components/ModelMapping';
 
 const TutorialScreen = () => {
 
-  const [selectedModel, setSelectedModel] = useState('Default Model'); // Initialize with the name of the default model
-  const [selectedVideoId, setSelectedVideoId] = useState(ModelMapping['Default Model'].videoId); // Initialize video ID state  
+  const [selectedModel, setSelectedModel] = useState('Getting Started'); // Initialize with the name of the default model
+  const [selectedVideoId, setSelectedVideoId] = useState(ModelMapping['Getting Started'].videoId); // Initialize video ID state  
 
   const navigate = useNavigate();
 
@@ -30,6 +30,10 @@ const TutorialScreen = () => {
     const videoId = ModelMapping[modelName].videoId;
     setSelectedVideoId(videoId);
   };
+
+  useEffect(() => {
+    document.title = "SignIT | Tutorial"; 
+  }, []);
 
   return (
     <div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import HelpIcon from '@mui/icons-material/Help';
@@ -9,6 +9,11 @@ const MainScreen = () => {
   const [isChatVisible, setIsChatVisible] = useState(false);
 
   const toggleChat = () => setIsChatVisible(!isChatVisible);
+
+
+  useEffect(() => {
+    document.title = "SignIT | Home"; 
+  }, []);
 
   return (
     <div className="mainContainer">
