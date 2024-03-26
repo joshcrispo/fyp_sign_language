@@ -8,6 +8,9 @@
 }
 
 .video-container {
+    width: 100%; /* Adjust this to fit your layout */
+    height: 0; /* This will be determined by the aspect ratio */
+    padding-bottom: 56.25%; /* Aspect ratio for 16:9 */
     position: relative;
     border-radius: 16px;
     overflow: hidden;
@@ -31,7 +34,7 @@ canvas {
     align-items: center;
 }
 
-.video-container {
+.video-container video{
     position: relative;
 }
 
