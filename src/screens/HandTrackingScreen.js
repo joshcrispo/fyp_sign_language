@@ -23,8 +23,6 @@ const HandTrackingScreen = () => {
     const [isChatVisible, setIsChatVisible] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [countdown, setCountdown] = useState(null);
-
 
     const toggleChat = () => setIsChatVisible(!isChatVisible);
     const navigate = useNavigate();
@@ -95,14 +93,14 @@ const HandTrackingScreen = () => {
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
         const ctx = canvas.getContext('2d');
-
+    
         for (let i = 0; i < 40; i++) {
             ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
             frames.push(canvas.toDataURL('image/jpeg'));
             await new Promise(resolve => setTimeout(resolve, 125)); // 125ms interval for 8fps
         }
-
-        return frames;
+    
+        return frames; // Should return an array of data URLs
     };
 
     const handleModelSelect = (modelName) => {
@@ -117,10 +115,10 @@ const HandTrackingScreen = () => {
 
         // Implement countdown from 3 to 1 before capturing frames
         for (let i = 3; i > 0; i--) {
-            setCountdown(i); // Update countdown state
+            let countdownMessage = `Starting in ${i}...`;
+            setPredictionResult(countdownMessage);
             await new Promise(resolve => setTimeout(resolve, 1000)); // 1-second intervals
         }
-        setCountdown(null); // Hide countdown
 
         setPredictionResult("Capturing frames...");
         const frames = await captureFrames();
@@ -129,7 +127,8 @@ const HandTrackingScreen = () => {
         handlePredict(frames);
     };
 
-    const handlePredict = async () => {
+    const handlePredict = async (frames) => {
+        console.log(frames); // Add this line to check the contents of `frames`
         try {
             const response = await axios.post('http://127.0.0.1:7860/api/predict/', {
                 data: [
@@ -174,8 +173,6 @@ return (
                     <div className="video-content">
                         
                         <video ref={videoRef} style={{ transform: 'scaleX(-1)' }} autoPlay playsInline />
-                        {/* Display countdown if it's not null */}
-                        {countdown !== null && <p className="countdown">{countdown}</p>}
                         {/* FPS canvas without mirroring effect 
                         <canvas style={{
                             position: 'absolute',
@@ -189,7 +186,7 @@ return (
                     </div>
                 </div>
                 <div className='prediction-container'>
-                    <p>Prediction Result: {predictionResult}</p>
+                    <p>{predictionResult}</p>
                 </div>
             </div>
         </div>
