@@ -1,14 +1,14 @@
 import * as React from 'react';
 
 export const ModelMapping = {
-    'Getting Started': { file: 'getting_started.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
-    'Polite Expressions': {file: 'polite_expressions.h5', videoId: 'uvYgwXS3zlw?si=dzPX14pRb8XPi1Gj'},
-    'Questions': { file: 'questions.h5', videoId: '3JZyNV8a2hM?si=VftlXxcUhX8Get04' },
-    'Responses': { file: 'responses.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ' },
-    'Compliments': { file: 'compliments.h5', videoId: 'uvYgwXS3zlw?si=dzPX14pRb8XPi1Gj' },
-    'Feelings': { file: 'feelings.h5', videoId: '3JZyNV8a2hM?si=VftlXxcUhX8Get04' },
-    'Objects': {file: 'objects.h5', videoId: '-HBJ9WTc0es?si=alQkzL00I6O7TyoJ'},
-    'Animals': { file: 'animals.h5', videoId: 'QHFgzC026rM' },
-    'Fruits': { file: 'fruits.h5', videoId: '3JZyNV8a2hM?si=VftlXxcUhX8Get04'},
-    'The Sky': { file: 'the_sky.h5', videoId: '3JZyNV8a2hM?si=VftlXxcUhX8Get04'}
+    'Getting Started': { file: 'getting_started.h5', videoId: '7vEtqs5qIfM?si=s5uN99-aaXqDyzdj' },
+    'Polite Expressions': {file: 'polite_expressions.h5', videoId: 'vGmEYuyup0o?si=habBllXvSWW02VKe'},
+    'Questions': { file: 'questions.h5', videoId: 'VOQf8bIm5KI?si=XvPLwru600ZrR8o1' },
+    'Responses': { file: 'responses.h5', videoId: 'kDwYoWXtgdM?si=7HppYw0TL3R-Pj1o' },
+    'Compliments': { file: 'compliments.h5', videoId: 'euw95BrRy1k?si=DlK8PEy0_RisyAEd' },
+    'Feelings': { file: 'feelings.h5', videoId: '_0nZftJaFb4?si=XcEdjUGsqlMbMsmX' },
+    'Objects': {file: 'objects.h5', videoId: 'nNDz8C2GZ_Y?si=AyYgkuqmQzfwFmQg'},
+    'Animals': { file: 'animals.h5', videoId: 'lZuZJwcPY4Q?si=rz0F9hStfmUcr_SC' },
+    'Fruits': { file: 'fruits.h5', videoId: '1f-xVXhXEjA?si=SIRkAyLHmuIaz2m3'},
+    'The Sky': { file: 'the_sky.h5', videoId: 'MBHshnwWFNw?si=sjlPl2YxwjfpyNiD'}
   };

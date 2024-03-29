@@ -42,6 +42,7 @@ body, html {
   color: #7ED957; /* Accent color for contrast and emphasis */
   display: flex;
   gap: 30px;
+  cursor: pointer;
 }
 
 .icon:hover {
@@ -54,6 +55,8 @@ body, html {
 .scrollIndicator {
   position: absolute;
   bottom: 20px;
+  left: 50%; /* Center the element based on the full width */
+  transform: translateX(-50%); /* Shift it back by half its own width */
   animation: bounce 2s infinite;
   padding-bottom: 2rem;
 }
@@ -100,20 +103,21 @@ p {
 
 .textContent {
   display: flex;
+  flex: 2;
   flex-direction: column; /* Stack h1 and p on top of each other */
   justify-content: center; /* Adjust if needed */
-  max-width: 60%; /* Adjust based on your design preference */
 }
 
 .getStartedSection h1 {
-  width: 60%; /* h1 takes 70% of the container width */
+  width: 100%; /* h1 takes 70% of the container width */
 }
 
 .buttonContainer {
   display: flex;
+  flex: 1;
   flex-direction: column; /* Stack buttons on top of each other */
   align-items: center; /* Center buttons in the container */
-  gap: 20px; /* Adds space between the buttons */
+  gap: 2rem; /* Adds space between the buttons */
 }
 
 /* Style for all buttons within .buttonContainer */
@@ -144,13 +148,13 @@ p {
   border-radius: 50%; /* Circular shape */
   width: 50px; /* Button size */
   height: 50px; /* Button size */
-  cursor: pointer; /* Pointer cursor on hover */
   box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Shadow for depth */
   font-size: 24px; /* Adjust icon size if using text or font icon */
   display: flex; /* Center the content */
   align-items: center; /* Center the content vertically */
   justify-content: center; /* Center the content horizontally */
   z-index: 1050; /* Ensure it's above the chat box */
+  cursor: pointer;
 }
 
 .chatBox {
@@ -265,7 +269,7 @@ p {
 
 .prediction-container {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: center;
   padding: 0rem;
   padding-top: 1rem;
@@ -297,19 +301,19 @@ p {
 
 .video-container {
   position: relative;
-  height: 445px;
-  width: 55vw;
+  max-height: 63.4vh;
+  max-width: 55vw;
+  height: auto; /* Allows height to adjust */
+  width: auto; /* Allows height to adjust */
   border-radius: 25px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   display: flex;
 }
 
 .video-container video {
-  position:relative;
   height: 100%;
   width: 100%;
   border-radius: 25px;
-  object-fit: contain; /* Preserve aspect ratio without cropping */
   transform: scaleX(-1); 
 }
 
@@ -343,4 +347,152 @@ canvas {
 .tutorial-container iframe {
   width: 55vw; /* 60% of the viewport width */
   border-radius: 25px; 
+}
+
+/* About Page */
+.about-scroll-one {
+  display: flex;
+  align-items: center; /* Align vertically */
+  justify-content: space-between; /* Space out children */
+  gap: 5rem;
+}
+
+.about-scroll-one h1{
+  font-size: 8vw; /* Adjust based on your design needs */
+  font-weight: bolder;
+}
+
+.about-scroll-two {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5rem;
+}
+
+.about-scroll-two .photoLogo {
+  flex: 1; /* Allows each child to grow equally, taking up half the space */
+  display: flex;
+  justify-content: center; /* Centers content within each div, if needed */
+  align-items: center; /* Centers content vertically within each div, if needed */
+  width: auto;
+  height: auto;
+}
+
+.about-scroll-two .text-container{
+  width: 50%; /* Example to make the image fit the container */
+  gap: 10rem;
+}
+
+.about-scroll-two h1{
+  font-size: 3.5vw;
+  padding-bottom: 1.5rem;
+}
+
+.photoLogo img {
+  width: 100%; 
+  height: auto;
+}
+
+.about-scroll-three {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.about-scroll-three h1{
+  font-size: 3.5vw;
+  padding-bottom: 1.5rem;
+}
+
+.about-scroll-three iframe {
+  width: 100%;
+  height: 75vh;
+  border-radius: 25px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) { 
+  .about-scroll-one,
+  .about-scroll-two,
+  .about-scroll-three,
+  .main-content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .video-container,
+  .prediction-container {
+    justify-content: center;
+    margin: 0 2rem;
+  }
+
+  .about-scroll-two .text-container,
+  .about-scroll-two .photoLogo
+   {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Specifically target h1 within .about-scroll-two */
+  .about-scroll-two h1 {
+    font-size: 2.5rem; /* Smaller font size for .about-scroll-two */
+    margin-bottom: 1rem;
+    
+  }
+
+  .iconsContainer,
+  .about-scroll-one h1 /* Hide icons */
+  {
+    display: none;
+  }
+
+  .photoLogo img {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .about-scroll-three {
+    padding-top: 25rem;
+  }
+
+  .about-scroll-two h1,
+  .about-scroll-three h1 {
+    font-size: 2.5rem; /* Adjusted font size for smaller screens */
+    margin-top: 1rem; /* Space above h1, adjust as needed */
+    text-align: center; /* Center text for a better mobile view */
+  }
+
+  /* Adjust iframe for .about-scroll-three */
+  .about-scroll-three iframe {
+    height: auto; /* Allows height to adjust */
+    max-height: 75vh; 
+    min-height: 250px; /* Minimum height for visibility */
+  }
+
+  .tutorial-container iframe {
+    height: auto; /* Allows height to adjust */
+    max-height: 75vh; 
+    min-height: 250px; /* Minimum height for visibility */
+  }
+
+  .header,
+  .hand-tracking-screen .headerHandTracking,
+  .tutorial-screen .headerTutorial {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .hand-tracking-screen,
+  .tutorial-screen {
+    text-align: center; 
+  }
+
+  .textContent {
+    text-align: center;
+  }
 }

@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PinnedSubheaderList renders correctly and matches snapshot 1`] = `
+<DocumentFragment>
+  <ul
+    class="MuiList-root MuiList-padding MuiList-subheader css-zlnxci-MuiList-root"
+  >
+    <li />
+    <li>
+      <ul>
+        <li
+          class="MuiListSubheader-root MuiListSubheader-gutters MuiListSubheader-sticky css-uob957-MuiListSubheader-root"
+        >
+          Categories
+        </li>
+        <li
+          class="MuiListItem-root MuiListItem-gutters css-1nxmd3h-MuiListItem-root"
+        >
+          <div
+            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters MuiListItemButton-root MuiListItemButton-gutters css-4f85g-MuiButtonBase-root-MuiListItemButton-root"
+            role="button"
+            tabindex="0"
+          >
+            <div
+              class="MuiListItemText-root css-tlelie-MuiListItemText-root"
+            >
+              <span
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-10hburv-MuiTypography-root"
+              >
+                Getting Started
+              </span>
+            </div>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </div>
+        </li>
+        <li
+          class="MuiListItem-root MuiListItem-gutters css-1nxmd3h-MuiListItem-root"
+        >
+          <div
+            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters MuiListItemButton-root MuiListItemButton-gutters css-2ig67u-MuiButtonBase-root-MuiListItemButton-root"
+            role="button"
+            tabindex="0"
+          >
+            <div
+              class="MuiListItemText-root css-tlelie-MuiListItemText-root"
+            >
+              <span
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-10hburv-MuiTypography-root"
+              >
+                Another Model
+              </span>
+            </div>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </div>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</DocumentFragment>
+`;

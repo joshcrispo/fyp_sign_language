@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import PinnedSubheaderList from '../components/PinnedSubheaderList'; 
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'; // Play icon
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SchoolIcon from '@mui/icons-material/School';
 import { useNavigate } from 'react-router-dom';
 import { ModelMapping } from '../components/ModelMapping';
+import Chatbox from '../components/Chatbox'; // Import your ChatBox component
+
 
 const TutorialScreen = () => {
 
@@ -21,8 +24,16 @@ const TutorialScreen = () => {
     navigate('/');
   };
 
+  const handleAboutClick = () => {
+      navigate('/about');
+  };  
+
+  const handleTutorialClick = () => {
+      navigate('/tutorial')
+  };
+
   const handlePlayClick = () => {
-    navigate('/handtracking')
+      navigate('/handtracking')
   };
 
   const handleModelSelect = (modelName) => {
@@ -40,11 +51,12 @@ const TutorialScreen = () => {
       <div className='tutorial-screen'>
       <div className="headerTutorial">
           <div className="iconsContainer">
-              <HomeIcon className="icon" fontSize='large' onClick={handleHomeClick}/>
-              <InfoIcon className="icon" fontSize='large'/>
-              <PlayArrowIcon className="icon" fontSize='large' onClick={handlePlayClick}/>
+                <HomeIcon className="icon" fontSize='large' onClick={handleHomeClick} />
+                <InfoIcon className='icon' fontSize='large' onClick={handleAboutClick}/>
+                <SchoolIcon className="icon" fontSize='large' onClick={handleTutorialClick} />
+                <PlayArrowIcon className='icon' fontSize='large' onClick={handlePlayClick} />
           </div>
-          <h3 className="logo">SignIT</h3>
+          <h3 className="logo" onClick={handleHomeClick}>SignIT</h3>
       </div>
       <h1>TIME TO LEARN!</h1>
       <div className="main-content">
@@ -66,12 +78,7 @@ const TutorialScreen = () => {
       </div>
       <button className="floatingButton" onClick={toggleChat}>?</button>
       {isChatVisible && (
-        <div className={`chatBox ${isChatVisible ? 'chatBox-visible' : ''}`}>
-          <p>Don't know any sign language? Don't worry, head over to the tutorial in our Get Started section.</p>
-          <div className="button-center">
-            <button className="reusable-button-style" onClick={toggleChat}>Close</button>
-          </div>
-        </div>
+         <Chatbox isChatVisible={isChatVisible} toggleChat={toggleChat} />
       )}
   </div>
     </div>

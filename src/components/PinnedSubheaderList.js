@@ -33,7 +33,7 @@ export default function PinnedSubheaderList({ models, selectedModel, onModelSele
     >
       <li key="section-models">
         <ul>
-          <ListSubheader>{`Models`}</ListSubheader>
+          <ListSubheader>{`Categories`}</ListSubheader>
           {models.map((model, index) => (
             <ListItem key={`item-model-${index}`} disablePadding>
               <ListItemButton

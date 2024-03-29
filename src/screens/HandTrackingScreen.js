@@ -1,18 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Holistic, POSE_CONNECTIONS, FACEMESH_TESSELATION, HAND_CONNECTIONS } from '@mediapipe/holistic';
-import { Camera } from '@mediapipe/camera_utils';
-import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import SchoolIcon from '@mui/icons-material/School';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import axios from 'axios';
 import PinnedSubheaderList from '../components/PinnedSubheaderList'; 
 import { ModelMapping } from '../components/ModelMapping';
-
-let fps = 0;
-let lastTime = Date.now();
-const predictionCooldownTime = 5000;
+import Chatbox from '../components/Chatbox';
+ 
 
 const HandTrackingScreen = () => {
 
@@ -21,34 +17,36 @@ const HandTrackingScreen = () => {
     const [selectedModel, setSelectedModel] = useState('Getting Started');
 
     const [isChatVisible, setIsChatVisible] = useState(false);
-    const [isRecording, setIsRecording] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     const toggleChat = () => setIsChatVisible(!isChatVisible);
     const navigate = useNavigate();
     //const fpsCanvasRef = useRef(null);
     const videoRef = useRef(null);
-    const mainCanvasRef = useRef(null); 
-    
-    const [keypointSequences, setKeypointSequences] = useState([]);
-
-    const [isCanvasVisible, setIsCanvasVisible] = useState(true);
 
     const handleHomeClick = () => {
+        stopCamera()
         navigate('/');
-    };    
+    };
+
+    const handleAboutClick = () => {
+        stopCamera()
+        navigate('/about');
+    };  
 
     const handleTutorialClick = () => {
+        stopCamera()
         navigate('/tutorial')
     };
 
-    const accumulateKeypoints = (newKeypoints) => {
-        
-        setKeypointSequences(prev => {
-            const newSequence = [...prev, newKeypoints].slice(-40);
-            console.log(newSequence.length);
-            return newSequence;
-        });    
+    const handlePlayClick = () => {
+        navigate('/handtracking')
+    };
+
+    const stopCamera = () => {
+        if (videoRef.current && videoRef.current.srcObject) {
+            videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+        }
     };
 
     useEffect(() => {
@@ -84,8 +82,9 @@ const HandTrackingScreen = () => {
         };
 
         startCamera();
-        return () => videoRef.current && videoRef.current.srcObject && videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+        return () => stopCamera();
     }, []);
+
 
     const captureFrames = async () => {
         const frames = [];
@@ -97,10 +96,10 @@ const HandTrackingScreen = () => {
         for (let i = 0; i < 40; i++) {
             ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
             frames.push(canvas.toDataURL('image/jpeg'));
-            await new Promise(resolve => setTimeout(resolve, 125)); // 125ms interval for 8fps
+            await new Promise(resolve => setTimeout(resolve, 125)); 
         }
-    
-        return frames; // Should return an array of data URLs
+        
+        return frames;
     };
 
     const handleModelSelect = (modelName) => {
@@ -149,11 +148,12 @@ return (
     <div className='hand-tracking-screen'>
         <div className="headerHandTracking">
             <div className="iconsContainer">
-                <HomeIcon className="icon" fontSize='large' onClick={handleHomeClick}/>
-                <InfoIcon className="icon" fontSize='large'/>
-                <SchoolIcon className="icon" fontSize='large' onClick={handleTutorialClick}/>
-            </div>
-            <h3 className="logo">SignIT</h3>
+                <HomeIcon className="icon" fontSize='large' onClick={handleHomeClick} />
+                <InfoIcon className='icon' fontSize='large' onClick={handleAboutClick}/>
+                <SchoolIcon className="icon" fontSize='large' onClick={handleTutorialClick} />
+                <PlayArrowIcon className='icon' fontSize='large' onClick={handlePlayClick} />
+            </div>    
+            <h3 className="logo" onClick={handleHomeClick}>SignIT</h3>
         </div>
         <h1>TEST YOURSELF</h1>
         <div className="main-content">
@@ -193,16 +193,7 @@ return (
 
         <button className="floatingButton" onClick={toggleChat}>?</button>
         {isChatVisible && (
-        <div className={`chatBox ${isChatVisible ? 'chatBox-visible' : ''}`}>
-            <p>If you are experiencing some incorrect results try changing your position. You might be too close or too far from the camera.<br /><br />
-                Some troublesome categories:<br />
-                - Responses <br />
-                <br />
-                Don't know any sign language? Don't worry, head over to the tutorial in our Get Started section.</p>
-            <div className="button-center">
-                <button className="reusable-button-style" onClick={toggleChat}>Close</button>
-            </div>
-        </div>
+         <Chatbox isChatVisible={isChatVisible} toggleChat={toggleChat} />
         )}
     </div>
 );
