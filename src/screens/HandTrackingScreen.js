@@ -1,15 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import HomeIcon from '@mui/icons-material/Home';
-import InfoIcon from '@mui/icons-material/Info';
-import SchoolIcon from '@mui/icons-material/School';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import axios from 'axios';
-import PinnedSubheaderList from '../components/PinnedSubheaderList'; 
-import { ModelMapping } from '../components/ModelMapping';
-import Chatbox from '../components/Chatbox';
+import { HeaderPrediction, PinnedSubheaderList,CameraPrediction, ModelMapping, Chatbox } from '../components/index';
  
-
 const HandTrackingScreen = () => {
 
     const [predictionResult, setPredictionResult] = useState('Press Begin Prediction');
@@ -20,28 +12,8 @@ const HandTrackingScreen = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const toggleChat = () => setIsChatVisible(!isChatVisible);
-    const navigate = useNavigate();
-    //const fpsCanvasRef = useRef(null);
+
     const videoRef = useRef(null);
-
-    const handleHomeClick = () => {
-        stopCamera()
-        navigate('/');
-    };
-
-    const handleAboutClick = () => {
-        stopCamera()
-        navigate('/about');
-    };  
-
-    const handleTutorialClick = () => {
-        stopCamera()
-        navigate('/tutorial')
-    };
-
-    const handlePlayClick = () => {
-        navigate('/handtracking')
-    };
 
     const stopCamera = () => {
         if (videoRef.current && videoRef.current.srcObject) {
@@ -61,7 +33,7 @@ const HandTrackingScreen = () => {
         return () => clearTimeout(timer);
     }, []);
     
-
+    // Starting Camera Feed
     useEffect(() => {
         const startCamera = () => {
             const constraints = {
@@ -84,7 +56,6 @@ const HandTrackingScreen = () => {
         startCamera();
         return () => stopCamera();
     }, []);
-
 
     const captureFrames = async () => {
         const frames = [];
@@ -112,11 +83,10 @@ const HandTrackingScreen = () => {
             return;
         }
 
-        // Implement countdown from 3 to 1 before capturing frames
         for (let i = 3; i > 0; i--) {
             let countdownMessage = `Starting in ${i}...`;
             setPredictionResult(countdownMessage);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // 1-second intervals
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
         setPredictionResult("Capturing frames...");
@@ -144,60 +114,31 @@ const HandTrackingScreen = () => {
         }
     };
 
-return (
-    <div className='hand-tracking-screen'>
-        <div className="headerHandTracking">
-            <div className="iconsContainer">
-                <HomeIcon className="icon" fontSize='large' onClick={handleHomeClick} />
-                <InfoIcon className='icon' fontSize='large' onClick={handleAboutClick}/>
-                <SchoolIcon className="icon" fontSize='large' onClick={handleTutorialClick} />
-                <PlayArrowIcon className='icon' fontSize='large' onClick={handlePlayClick} />
-            </div>    
-            <h3 className="logo" onClick={handleHomeClick}>SignIT</h3>
-        </div>
-        <h1>TEST YOURSELF</h1>
-        <div className="main-content">
-            <div className="menu-container">
-                <PinnedSubheaderList 
-                    models={Object.keys(ModelMapping)}
-                    selectedModel={selectedModel}
-                    onModelSelect={(handleModelSelect)}
+    return (
+        <div className='hand-tracking-screen'>
+            <HeaderPrediction stopCamera={stopCamera} />
+            <h1>TEST YOURSELF</h1>
+            <div className="main-content">
+                <div className="menu-container">
+                    <PinnedSubheaderList 
+                        models={Object.keys(ModelMapping)}
+                        selectedModel={selectedModel}
+                        onModelSelect={(handleModelSelect)}
+                    />
+                    <button className="reusable-button-style" onClick={handleBeginPrediction}>Begin Prediction</button>
+                </div>
+                <CameraPrediction
+                    isLoading={isLoading}
+                    predictionResult={predictionResult}
+                    videoRef={videoRef}
                 />
-                <button className="reusable-button-style" onClick={handleBeginPrediction}>Begin Prediction</button>
             </div>
-            <div>
-                <div className='video-container'>
-                    <div className="loading-spinner" style={{ display: isLoading ? 'flex' : 'none' }}>
-                        <div className="spinner"></div> {/* Animated spinner */}
-                    </div>
-                    <div className="video-content">
-                        
-                        <video ref={videoRef} style={{ transform: 'scaleX(-1)' }} autoPlay playsInline />
-                        {/* FPS canvas without mirroring effect 
-                        <canvas style={{
-                            position: 'absolute',
-                            bottom: 0, // Position it at the bottom or top as you prefer
-                            left: '50%',
-                            transform: 'translateX(-1)', // Center the FPS counter horizontally
-                            width: '200px', // Specify the width as needed
-                            height: '150px' // Specify the height as needed
-                        }} ref={fpsCanvasRef} />
-                        */}
-                    </div>
-                </div>
-                <div className='prediction-container'>
-                    <p>{predictionResult}</p>
-                </div>
-            </div>
+            <button className="floatingButton" onClick={toggleChat}>?</button>
+            {isChatVisible && (
+            <Chatbox isChatVisible={isChatVisible} toggleChat={toggleChat} />
+            )}
         </div>
-
-        <button className="floatingButton" onClick={toggleChat}>?</button>
-        {isChatVisible && (
-         <Chatbox isChatVisible={isChatVisible} toggleChat={toggleChat} />
-        )}
-    </div>
-);
-
+    );
 };
 
 export default HandTrackingScreen;
