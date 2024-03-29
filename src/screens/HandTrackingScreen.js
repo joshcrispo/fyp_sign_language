@@ -5,8 +5,9 @@ import { HeaderPrediction, PinnedSubheaderList,CameraPrediction, ModelMapping, C
 const HandTrackingScreen = () => {
 
     const [predictionResult, setPredictionResult] = useState('Press Begin Prediction');
-
     const [selectedModel, setSelectedModel] = useState('Getting Started');
+    const [countdown, setCountdown] = useState('');
+
 
     const [isChatVisible, setIsChatVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -84,10 +85,12 @@ const HandTrackingScreen = () => {
         }
 
         for (let i = 3; i > 0; i--) {
-            let countdownMessage = `Starting in ${i}...`;
+            setCountdown(`${i}`);
+            let countdownMessage = `Starting...`;
             setPredictionResult(countdownMessage);
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
+        setCountdown(''); // Clear the countdown message
 
         setPredictionResult("Capturing frames...");
         const frames = await captureFrames();
@@ -131,6 +134,7 @@ const HandTrackingScreen = () => {
                     isLoading={isLoading}
                     predictionResult={predictionResult}
                     videoRef={videoRef}
+                    countdown={countdown}
                 />
             </div>
             <button className="floatingButton" onClick={toggleChat}>?</button>

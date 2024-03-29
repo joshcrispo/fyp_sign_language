@@ -1,6 +1,6 @@
 import React from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import myPhoto2 from '../assets/YoutubeThumbnails3.png'
+import myPhoto2 from '../assets/SignIT_landscape.png'
 
 const MainFirstView = () => {
   return (
