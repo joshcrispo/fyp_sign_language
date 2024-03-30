@@ -8,7 +8,6 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 const HeaderPrediction = ( { stopCamera }) => {
     const navigate = useNavigate();
 
-
     const handleHomeClick = () => {
         stopCamera()
         navigate('/');

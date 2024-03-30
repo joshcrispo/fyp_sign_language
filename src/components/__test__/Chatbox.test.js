@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Chatbox from '../Chatbox'; // Adjust the import path as necessary
+import Chatbox from '../Chatbox';
 
 describe('Chatbox Component', () => {
   it('calls the toggleChat function when the close button is clicked', () => {
