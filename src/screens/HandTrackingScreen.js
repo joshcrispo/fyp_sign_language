@@ -46,7 +46,6 @@ const HandTrackingScreen = () => {
         
         setKeypointSequences(prev => {
             const newSequence = [...prev, newKeypoints].slice(-40);
-            console.log(newSequence.length);
             return newSequence;
         });    
     };
@@ -95,8 +94,8 @@ const HandTrackingScreen = () => {
     };
 
     const handlePredict = async () => {
-        console.log(keypointSequences.length);
-        console.log(selectedModel);
+        console.log("Length of Sequence being sent: ",keypointSequences.length);
+        console.log("Model Selected: ",selectedModel);
         if (keypointSequences.length < 0) {
             alert("Not enough data for prediction. Please wait until 30 sequences of keypoints are accumulated.");
             return;
