@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PinnedSubheaderList renders correctly and matches snapshot 1`] = `
+exports[`MainSecondView Navigation PinnedSubheaderList renders correctly and matches snapshot 1`] = `
 <DocumentFragment>
   <ul
     class="MuiList-root MuiList-padding MuiList-subheader css-zlnxci-MuiList-root"

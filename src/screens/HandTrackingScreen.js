@@ -86,7 +86,7 @@ const HandTrackingScreen = () => {
 
         for (let i = 3; i > 0; i--) {
             setCountdown(`${i}`);
-            let countdownMessage = `Starting...`;
+            let countdownMessage = `Get Ready To Sign...`;
             setPredictionResult(countdownMessage);
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
