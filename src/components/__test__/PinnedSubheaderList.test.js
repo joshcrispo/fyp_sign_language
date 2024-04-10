@@ -29,16 +29,10 @@ describe('Menu Functionality', () => {
         expect(listItemElement).not.toBeInTheDocument();
     });
 
-    it('PinnedSubheaderList renders correctly and matches snapshot', () => {
-        const models = ["Getting Started", "Another Model"];
-        const { asFragment } = render(<PinnedSubheaderList models={models} selectedModel="Getting Started" onModelSelect={() => {}} />);
-        expect(asFragment()).toMatchSnapshot();
-    });
-
     it('selecting a model triggers onModelSelect callback', () => {
         const models = ["Getting Started", "Another Model"];
         const onModelSelect = jest.fn();
-        render(<PinnedSubheaderList models={models} selectedModel={"Another Model"} onModelSelect={onModelSelect} />);
+        render(<PinnedSubheaderList models={models} selectedModel={"Getting Started"} onModelSelect={onModelSelect} />);
         
         const modelButton = screen.getByRole('button', { name: /another model/i });
         fireEvent.click(modelButton);

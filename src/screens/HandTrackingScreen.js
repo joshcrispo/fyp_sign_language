@@ -7,7 +7,7 @@ const HandTrackingScreen = () => {
     const [predictionResult, setPredictionResult] = useState('Press Begin Prediction');
     const [selectedModel, setSelectedModel] = useState('Getting Started');
     const [countdown, setCountdown] = useState('');
-
+    const [showOverlay, setShowOverlay] = useState(true);
 
     const [isChatVisible, setIsChatVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +55,7 @@ const HandTrackingScreen = () => {
         };
 
         startCamera();
+        console.log(showOverlay);
         return () => stopCamera();
     }, []);
 
@@ -79,6 +80,7 @@ const HandTrackingScreen = () => {
     };
 
     const handleBeginPrediction = async () => {
+        setShowOverlay(false);
         if (isLoading) {
             alert('Camera is not ready yet.');
             return;
@@ -92,7 +94,7 @@ const HandTrackingScreen = () => {
         }
         setCountdown(''); // Clear the countdown message
 
-        setPredictionResult("Capturing frames...");
+        setPredictionResult("Recording Camera Feed...");
         const frames = await captureFrames();
 
         setPredictionResult("Predicting...");
@@ -100,7 +102,7 @@ const HandTrackingScreen = () => {
     };
 
     const handlePredict = async (frames) => {
-        console.log(frames); // Add this line to check the contents of `frames`
+        console.log(frames);
         try {
             const response = await axios.post('http://127.0.0.1:7860/api/predict/', {
                 data: [
@@ -110,7 +112,7 @@ const HandTrackingScreen = () => {
             });
             console.log("Prediction response:", response.data);
             const resultString = response.data.data[0];
-            setPredictionResult(resultString); // Update the prediction result state
+            setPredictionResult(resultString);
         } catch (error) {
             console.error("Error during prediction:", error);
             setPredictionResult("Error during prediction.");
@@ -135,6 +137,7 @@ const HandTrackingScreen = () => {
                     predictionResult={predictionResult}
                     videoRef={videoRef}
                     countdown={countdown}
+                    showOverlay={showOverlay}
                 />
             </div>
             <button className="floatingButton" onClick={toggleChat}>?</button>

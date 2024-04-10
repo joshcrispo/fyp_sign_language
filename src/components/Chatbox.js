@@ -4,7 +4,7 @@ const Chatbox = ({ toggleChat, isChatVisible }) => {
   return (
     <div className={`chatBox ${isChatVisible ? 'chatBox-visible' : ''}`}>
       <p style={{ color: '#7ED957', fontWeight: 'bolder', WebkitTextStroke: '1px black', fontSize: '1.1em' }}>Incorrect results?</p>
-        Try adjusting your distance from the camera. You might be too close or too far. Also, <strong>TRY DIFFERENT HANDS!</strong>
+        Position Yourself With The Overlay. Also TRY DIFFERENT HANDS!
         <br />
         <br />
         <p style={{ color: '#7ED957', fontWeight: 'bolder', WebkitTextStroke: '1px black', fontSize: '1.1em' }}>Don't know any sign language?</p><p>Don't worry, head over to the tutorial in our Get Started section.

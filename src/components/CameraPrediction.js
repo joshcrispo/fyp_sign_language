@@ -1,11 +1,31 @@
 import React from 'react';
+import overlayImage from '../assets/Overlay_SignITV10.png'; // Update with the correct path to your image
 
-const CameraPrediction = ({ isLoading, predictionResult, videoRef, countdown }) => {
+
+const CameraPrediction = ({ isLoading, predictionResult, videoRef, countdown, showOverlay }) => {
   return (
     <div>
       <div className='video-container'>
+      {showOverlay && (
+        <>
+          <img
+            src={overlayImage}
+            alt="Overlay"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              zIndex: 1, // Overlay image
+              borderRadius: '25px',
+            }}
+          />
+        </>
+      )}
         <div className="loading-spinner" style={{ display: isLoading ? 'flex' : 'none' }}>
-          <div className="spinner"></div> {/* Ensure you have CSS for this spinner */}
+          
+          <div className="spinner"></div> 
         </div>
         {countdown && (
           <>
