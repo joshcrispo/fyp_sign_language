@@ -55,7 +55,6 @@ const HandTrackingScreen = () => {
         };
 
         startCamera();
-        console.log(showOverlay);
         return () => stopCamera();
     }, []);
 
@@ -102,7 +101,6 @@ const HandTrackingScreen = () => {
     };
 
     const handlePredict = async (frames) => {
-        console.log(frames);
         try {
             const response = await axios.post('http://127.0.0.1:7860/api/predict/', {
                 data: [
@@ -110,7 +108,6 @@ const HandTrackingScreen = () => {
                     JSON.stringify(frames)                
                 ]
             });
-            console.log("Prediction response:", response.data);
             const resultString = response.data.data[0];
             setPredictionResult(resultString);
         } catch (error) {
